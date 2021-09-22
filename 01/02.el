@@ -16,8 +16,6 @@
          (when (cl-reduce #'string= it)
            t))))
 
-(ctci/check-permutation-define-test "reduce")
-
 ;; It's not great to use `reduce' here because if the fail happens early, the
 ;; rest of the strings will still go through the reduction.  I could implement
 ;; a throw/catch in the pred, but I think it's better to work with arrays
@@ -36,15 +34,13 @@
                  do (throw 'difference nil)
                  finally return t)))))
 
-(ctci/check-permutation-define-test "non-modularised-signature")
-
 ;; Now, we're not using `cl-reduce' anymore, which is good; but the modularity
 ;; needs to appear in the function signature as well.
 
 ;; Using `&rest' in the signature
 (defun ctci/check-permutation (&rest strs)
   (when (->> (mapcar #'length strs)
-       (cl-every #'=))
+             (cl-every #'=))
     (let ((sorted-strs (cl-loop for str in strs
                                 collect (seq-sort #'< str))))
       (catch 'difference
@@ -55,7 +51,9 @@
                  do (throw 'difference nil)
                  finally return t)))))
 
-(ctci/check-permutation-define-test)
+;;----------------------------------------------------------------------------
+;; Alternatives
+;;----------------------------------------------------------------------------
 
 ;; Cheating; there's a command that almost does what we want, but it returns
 ;; t for "foo" and "fooo"; we can just use our previous check
@@ -81,7 +79,7 @@
 ;; Test-maker; vifon hates it, but at least I don't have to write boilerplate
 ;; for dumb tests like above.  This is just for using ERT's quick testing
 ;; facility, not for developing a package.
-(defun ctci/check-permutation-define-test (&optional name)
+(defun ctci/check-permutation-deftest (&optional name)
   (let* ((base-name "ctci/check-permutation")
          (checks '((("foo" "foo") t)
                    (("foo" "oof") t)
@@ -97,3 +95,8 @@
              ,@(cl-loop for (input output) in checks
                         collect `(should (,comparison (apply #',fun ',input)
                                                       ,output)))))))
+
+;; Running tests
+(ctci/check-permutation-deftest "reduce")
+(ctci/check-permutation-deftest "non-modularised-signature")
+(ctci/check-permutation-deftest)
