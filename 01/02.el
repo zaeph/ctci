@@ -65,6 +65,20 @@
                do (throw 'difference nil)
                finally return t))))
 
+;; Do it with maps because vifon sucks
+(defun ctci/check-permutation-with-maps (&rest strs)
+  (when (->> (mapcar #'length strs)
+             (cl-every #'=))
+    (let* ((sorted-strs (mapcar (lambda (str)
+                                  (seq-sort #'< str))
+                                strs))
+           (str1 (pop sorted-strs)))
+      (catch 'difference
+        (not (while sorted-strs
+               (let ((str2 (pop sorted-strs)))
+                 (unless (string= str1 str2)
+                   (throw 'difference nil)))))))))
+
 ;;----------------------------------------------------------------------------
 ;; Alternatives
 ;;----------------------------------------------------------------------------
@@ -113,4 +127,5 @@
 (ctci/check-permutation-deftest "reduce")
 (ctci/check-permutation-deftest "non-modularised-signature")
 (ctci/check-permutation-deftest "rest")
+(ctci/check-permutation-deftest "with-maps")
 (ctci/check-permutation-deftest)
