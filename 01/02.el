@@ -38,7 +38,7 @@
 ;; needs to appear in the function signature as well.
 
 ;; Using `&rest' in the signature
-(defun ctci/check-permutation (&rest strs)
+(defun ctci/check-permutation-rest (&rest strs)
   (when (->> (mapcar #'length strs)
              (cl-every #'=))
     (let ((sorted-strs (cl-loop for str in strs
@@ -50,6 +50,20 @@
                  unless (string= str1 str2)
                  do (throw 'difference nil)
                  finally return t)))))
+
+;; Dropping the external let
+(defun ctci/check-permutation (&rest strs)
+  (when (->> (mapcar #'length strs)
+             (cl-every #'=))
+    (catch 'difference
+      (cl-loop with sorted-strs = (cl-loop for str in strs
+                                           collect (seq-sort #'< str))
+               with str1 = (pop sorted-strs)
+               while sorted-strs
+               for str2 = (pop sorted-strs)
+               unless (string= str1 str2)
+               do (throw 'difference nil)
+               finally return t))))
 
 ;;----------------------------------------------------------------------------
 ;; Alternatives
@@ -98,4 +112,5 @@
 ;; Running tests
 (ctci/check-permutation-deftest "reduce")
 (ctci/check-permutation-deftest "non-modularised-signature")
+(ctci/check-permutation-deftest "rest")
 (ctci/check-permutation-deftest)
