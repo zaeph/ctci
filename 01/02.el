@@ -1,8 +1,10 @@
 ;; -*- mode: lisp-interaction; coding: utf-8; lexical-binding: t -*-
 
-;;; Check Permutation
+;; Check Permutation
 ;; Given two strings, write a method to decide if one is a permutation of the
 ;; other.
+
+;;; Code
 
 (require 'cl-lib)
 (require 'dash)
@@ -79,8 +81,6 @@
                  (unless (string= str1 str2)
                    (throw 'difference nil)))))))))
 
-
-
 ;;; Solving with char comparisons rather than `string='
 
 ;; This might not be as time efficient as the previous method, but it has the
@@ -121,7 +121,7 @@
                  finally return t)))))
 
 ;;----------------------------------------------------------------------------
-;; Alternatives
+;;; Alternatives
 ;;----------------------------------------------------------------------------
 
 ;; Cheating; there's a command that almost does what we want, but it returns
@@ -131,8 +131,8 @@
            (length str2))
     (seq-set-equal-p str1 str2)))
 
-;;----------------------------------------------------------------------------
-;; Tests
+;;---------------------------------------------------------------------------
+;;; Tests
 ;;----------------------------------------------------------------------------
 
 ;; Dumb tests
