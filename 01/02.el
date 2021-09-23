@@ -79,6 +79,47 @@
                  (unless (string= str1 str2)
                    (throw 'difference nil)))))))))
 
+
+
+;;; Solving with char comparisons rather than `string='
+
+;; This might not be as time efficient as the previous method, but it has the
+;; benefits of not working on a sorted list.  I can foresee efficiency
+;; problems with modularisation and `copy-tree' for not overriding the
+;; char-count, but it's another method at least.
+
+(defun ctci/check-permutation-char-count (str1 str2)
+  (when (= (length str1)
+           (length str2))
+    (let ((char-count (make-vector 256 0))) ;Init to ascii length for now
+      (cl-loop for char across str1
+               do (cl-incf (aref char-count char))) ;Nice discovery of `cl-incf' and `cl-decf' for inplace incrementation
+                                                    ;à la setf
+      ;; To allow for modularisation, it might be interesting to copy
+      ;; char-count here; it will be expensive, though
+      (catch 'difference
+        (cl-loop for char across str2
+                 do (cl-decf (aref char-count char))
+                 if (< (aref char-count char) 0)
+                 do (throw 'difference nil)
+                 finally return t)))))
+
+(defun ctci/check-permutation-char-count-modularised (&rest strs)
+  (when (->> (mapcar #'length strs)
+             (apply #'=))
+    (let ((char-count (make-vector 256 0))
+          (str1 (pop strs)))
+      (cl-loop for char across str1
+               do (cl-incf (aref char-count char)))
+      (catch 'difference
+        (cl-loop for str in strs
+                 do (cl-loop for char across str
+                             with char-count = (copy-sequence char-count)
+                             do (cl-decf (aref char-count char))
+                             if (< (aref char-count char) 0)
+                             do (throw 'difference nil))
+                 finally return t)))))
+
 ;;----------------------------------------------------------------------------
 ;; Alternatives
 ;;----------------------------------------------------------------------------
@@ -106,13 +147,18 @@
 ;; Test-maker; vifon hates it, but at least I don't have to write boilerplate
 ;; for dumb tests like above.  This is just for using ERT's quick testing
 ;; facility, not for developing a package.
-(defun ctci/check-permutation-deftest (&optional name)
+(defun ctci/check-permutation-deftest (&optional name only-two)
   (let* ((base-name "ctci/check-permutation")
-         (checks '((("foo" "foo") t)
+         (checks `((("foo" "foo") t)
                    (("foo" "oof") t)
+                   (("" "") t)
                    (("foo" "bar") nil)
                    (("foo" "fooo") nil)
-                   (("foo" "") nil)))
+                   (("foo" "") nil)
+                   ,@(unless only-two
+                       '((("foo" "oof" "ofo") t)
+                         (("" "" "") t)
+                         (("foo" "oof" "ooo") nil)))))
          (fun (-> (if name
                       (format "%s-%s" base-name name)
                     base-name)
@@ -123,9 +169,13 @@
                         collect `(should (,comparison (apply #',fun ',input)
                                                       ,output)))))))
 
-;; Running tests
-(ctci/check-permutation-deftest "reduce")
-(ctci/check-permutation-deftest "non-modularised-signature")
-(ctci/check-permutation-deftest "rest")
-(ctci/check-permutation-deftest "with-maps")
-(ctci/check-permutation-deftest)
+(defun ctci/check-permutation-deftest-all ()
+  (ctci/check-permutation-deftest "reduce" t)
+  (ctci/check-permutation-deftest "non-modularised-signature" t)
+  (ctci/check-permutation-deftest "rest" t)
+  (ctci/check-permutation-deftest "with-maps")
+  (ctci/check-permutation-deftest "char-count" t)
+  (ctci/check-permutation-deftest "char-count-modularised")
+  (ctci/check-permutation-deftest))
+
+(ctci/check-permutation-deftest-all)
