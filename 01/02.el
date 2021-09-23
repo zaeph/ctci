@@ -40,7 +40,7 @@
 ;; Using `&rest' in the signature
 (defun ctci/check-permutation-rest (&rest strs)
   (when (->> (mapcar #'length strs)
-             (cl-every #'=))
+             (apply #'=))
     (let ((sorted-strs (cl-loop for str in strs
                                 collect (seq-sort #'< str))))
       (catch 'difference
@@ -54,7 +54,7 @@
 ;; Dropping the external let
 (defun ctci/check-permutation (&rest strs)
   (when (->> (mapcar #'length strs)
-             (cl-every #'=))
+             (apply #'=))
     (catch 'difference
       (cl-loop with sorted-strs = (cl-loop for str in strs
                                            collect (seq-sort #'< str))
@@ -68,7 +68,7 @@
 ;; Do it with maps because vifon sucks
 (defun ctci/check-permutation-with-maps (&rest strs)
   (when (->> (mapcar #'length strs)
-             (cl-every #'=))
+             (apply #'=))
     (let* ((sorted-strs (mapcar (lambda (str)
                                   (seq-sort #'< str))
                                 strs))
