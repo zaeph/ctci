@@ -8,6 +8,8 @@
 
 ;;; Code
 
+(require 'cl-lib)
+
 (defun ctci/remove-dups (list)
   (cl-loop for elem in list
            with table = (make-hash-table)
